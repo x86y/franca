@@ -1,3 +1,4 @@
+use wasm_bindgen::prelude::wasm_bindgen;
 use quote::quote;
 use syn::parse_quote;
 use syn::{ItemFn, Stmt};
@@ -247,53 +248,56 @@ pub const T: bool = true;
 pub const F: bool = false;
 pub type Sstr = &'static str;
 
-use wasm_bindgen::prelude::*;
-pub fn transform_loop_with_macro(item: ItemFn) -> ItemFn {
-    let mut transformed_stmts = Vec::new();
-
-    for stmt in &item.block.stmts {
-        match stmt {
-            // For range loop: for i in 0..x { ... }
-            Stmt::Expr(syn::Expr::ForLoop(loop_expr), _) => {
-                if let syn::Expr::Range(range_expr) = &*loop_expr.expr {
-                    if let (syn::Expr::Lit(start), syn::Expr::Lit(end)) = (
-                        range_expr.start.clone().unwrap().as_ref(),
-                        range_expr.end.clone().unwrap().as_ref(),
-                    ) {
-                        let loop_body = &loop_expr.body;
-                        let start_val = if let syn::Lit::Int(val) = &start.lit {
-                            val.base10_parse::<usize>().unwrap()
-                        } else {
-                            0
-                        };
-                        let end_val = if let syn::Lit::Int(val) = &end.lit {
-                            val.base10_parse::<usize>().unwrap()
-                        } else {
-                            0
-                        };
-                        let times = end_val - start_val;
-                        let new_stmt: Stmt = parse_quote! { DO!(#loop_body, #times); };
-                        transformed_stmts.push(new_stmt);
-                    }
+fn transform_stmt(stmt: &Stmt) -> Vec<Stmt> {
+    match stmt {
+        Stmt::Expr(syn::Expr::ForLoop(loop_expr), _) => {
+            if let syn::Expr::Range(range_expr) = &*loop_expr.expr {
+                if let (syn::Expr::Lit(start), syn::Expr::Lit(end)) = (
+                    range_expr.start.clone().unwrap().as_ref(),
+                    range_expr.end.clone().unwrap().as_ref(),
+                ) {
+                    let loop_body = &loop_expr.body;
+                    let start_val = if let syn::Lit::Int(val) = &start.lit {
+                        val.base10_parse::<usize>().unwrap_or(0)
+                    } else {
+                        0
+                    };
+                    let end_val = if let syn::Lit::Int(val) = &end.lit {
+                        val.base10_parse::<usize>().unwrap_or(0)
+                    } else {
+                        0
+                    };
+                    let times = end_val - start_val;
+                    let new_body = transform_block(loop_body);
+                    return vec![parse_quote! { DO!(#new_body, #times); }];
                 }
             }
-            // Unconditional loop: loop { ... }
-            Stmt::Expr(syn::Expr::Loop(loop_expr), _) => {
-                let loop_body = &loop_expr.body;
-                let new_stmt: Stmt = parse_quote! { DO!(#loop_body); };
-                transformed_stmts.push(new_stmt);
-            }
-            _ => {
-                transformed_stmts.push(stmt.clone());
-            }
         }
+        Stmt::Expr(syn::Expr::Loop(loop_expr), _) => {
+            let new_body = transform_block(&loop_expr.body);
+            return vec![parse_quote! { DO!(#new_body); }];
+        }
+        _ => return vec![stmt.clone()],
+    }
+    vec![]
+}
+
+fn transform_block(block: &syn::Block) -> syn::Block {
+    let mut transformed_stmts = Vec::new();
+    for stmt in &block.stmts {
+        transformed_stmts.extend(transform_stmt(stmt));
     }
 
+    syn::Block {
+        stmts: transformed_stmts,
+        ..block.clone()
+    }
+}
+
+pub fn transform_loop_with_macro(item: ItemFn) -> ItemFn {
+    let transformed_block = transform_block(&item.block);
     ItemFn {
-        block: Box::new(syn::Block {
-            stmts: transformed_stmts,
-            brace_token: item.block.brace_token,
-        }),
+        block: Box::new(transformed_block),
         ..item
     }
 }

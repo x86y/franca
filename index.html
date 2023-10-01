@@ -62,7 +62,10 @@
     <textarea id="inputVal" placeholder="Write rust code here">
 fn main() {
     for i in 0..5 {
-        println!("For loop");
+        println!("Out");
+        for i in 0..15 {
+                println!("In");
+        }
     }
     loop {
         println!("Forever loop");
