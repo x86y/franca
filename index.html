@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8" />
+  <link href="https://pvinis.github.io/iosevka-webfont/3.4.1/iosevka.css" rel="stylesheet" />
+  <title>Franca</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #wasmForm {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 500px;
+      box-sizing: border-box;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      resize: vertical;
+      height: 150px;
+      margin-bottom: 15px;
+      font-family: "Iosevka Web";
+    }
+    button {
+      background-color: #007BFF;
+      color: #ffffff;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    pre {
+      font-family: "Iosevka Web";
+      background-color: #e8e8e8;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 15px;
+      font-size: 14px;
+            white-space: pre-wrap;       /* Since CSS 2.1 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    }
+  </style>
+</head>
+<body>
+  <form id="wasmForm">
+    <textarea id="inputVal" placeholder="Write rust code here">
+fn main() {
+    for i in 0..5 {
+        println!("For loop");
+    }
+    loop {
+        println!("Forever loop");
+    }
+}
+    </textarea>
+    <button type="submit">Enter</button>
+    <pre><div id="output"></div></pre>
+  </form>
+
+  <script type="module">
+    import init, { terser_loops } from "./pkg/lib.js";
+
+    init();
+
+    document.getElementById('wasmForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const inputValue = document.getElementById('inputVal').value;
+      const result = terser_loops(inputValue);
+      document.getElementById('output').textContent = result;
+    });
+  </script>
+</body>
+</html>
+
