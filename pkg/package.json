@@ -2,12 +2,12 @@
   "name": "franca",
   "version": "0.1.0",
   "files": [
-    "lib_bg.wasm",
-    "lib.js",
-    "lib.d.ts"
+    "libfranca_bg.wasm",
+    "libfranca.js",
+    "libfranca.d.ts"
   ],
-  "module": "lib.js",
-  "types": "lib.d.ts",
+  "module": "libfranca.js",
+  "types": "libfranca.d.ts",
   "sideEffects": [
     "./snippets/*"
   ]

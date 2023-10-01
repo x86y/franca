@@ -4,13 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "lib"
-crate-type = ["cdylib"]
-path = "src/lib.rs"
+name = "libfranca"
+path = "src/lib/lib.rs"
+crate-type = ["cdylib", "rlib"]
 
 [[bin]]
-name = "bin"
-path = "src/main.rs"
+name = "franca_bin"
+path = "src/bin/main.rs"
 
 [dependencies]
 prettyplease = "0.2.15"
