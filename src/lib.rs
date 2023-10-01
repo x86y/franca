@@ -372,8 +372,9 @@ pub fn terser_loops(i: String) -> String {
     let item_fn: ItemFn = syn::parse_str(input_rust_code).unwrap();
     let transformed_fn = transform_loop_with_macro(item_fn);
     let generated_code = quote! { #transformed_fn };
-    println!("{}", generated_code);
-    generated_code.to_string()
+    let f: syn::File = syn::parse2(generated_code).unwrap();
+    let pretty = prettyplease::unparse(&f);
+    pretty.to_string()
 }
 
 #[cfg(test)]

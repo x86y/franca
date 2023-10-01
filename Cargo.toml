@@ -13,6 +13,7 @@ name = "bin"
 path = "src/main.rs"
 
 [dependencies]
+prettyplease = "0.2.15"
 quote = "1.0.33"
 syn = { version = "2.0.37", features = ["full"] }
 wasm-bindgen = "0.2.87"
