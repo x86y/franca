@@ -25,10 +25,11 @@ fn transform_stmt(stmt: &Stmt) -> Vec<Stmt> {
             let init = init.as_ref().unwrap();
             let expr = &init.expr;
             if let syn::Pat::Ident(ident) = pat {
+                let var_ident = &ident.ident;
                 if ident.mutability.is_some() {
-                    return vec![parse_quote! { lm!(#expr); }];
+                    return vec![parse_quote! { lm!(#var_ident, #expr); }];
                 } else {
-                    return vec![parse_quote! { l!(#expr); }];
+                    return vec![parse_quote! { l!(#var_ident, #expr); }];
                 }
             }
         }
