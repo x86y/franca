@@ -49,11 +49,16 @@
       border-radius: 4px;
       margin-top: 15px;
       font-size: 14px;
-            white-space: pre-wrap;       /* Since CSS 2.1 */
-    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-    white-space: -pre-wrap;      /* Opera 4-6 */
-    white-space: -o-pre-wrap;    /* Opera 7 */
-    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+      white-space: pre-wrap;       /* Since CSS 2.1 */
+      white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+      white-space: -pre-wrap;      /* Opera 4-6 */
+      white-space: -o-pre-wrap;    /* Opera 7 */
+      word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    }
+    #stats {
+        font-family: "Iosevka Web";
+        margin-top: 10px;
+        color: #333;
     }
   </style>
 </head>
@@ -61,11 +66,11 @@
   <form id="wasmForm">
     <textarea id="inputVal" placeholder="Write rust code here">
 pub fn eval(&mut self, s: String) {
-        let st = &mut vec![];
-        let b = &mut 0;
-        let a = &mut self.a;
-        let p = &mut self.p;
-        let ip = &mut self.ip;
+        let mut st = &mut vec![];
+        let mut b = &mut 0;
+        let mut a = &mut self.a;
+        let mut p = &mut self.p;
+        let mut ip = &mut self.ip;
         let by = s.as_bytes();
         while *ip < by.len() {
             let c = by[*ip];
@@ -96,6 +101,7 @@ pub fn eval(&mut self, s: String) {
     </textarea>
     <button type="submit">Enter</button>
     <pre><div id="output"></div></pre>
+    <div id="stats"></div>
   </form>
 
   <script type="module">
@@ -104,11 +110,19 @@ pub fn eval(&mut self, s: String) {
     init();
 
     document.getElementById('wasmForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const inputValue = document.getElementById('inputVal').value;
-      const result = mkterse(inputValue);
-      document.getElementById('output').textContent = result;
-    });
+            e.preventDefault();
+            const inputValue = document.getElementById('inputVal').value;
+            const result = mkterse(inputValue);
+            document.getElementById('output').textContent = result;
+
+            const inputBytes = new TextEncoder().encode(inputValue).length;
+            const outputBytes = new TextEncoder().encode(result).length;
+
+            document.getElementById('stats').innerHTML = `
+                Input: ${inputValue.length} chars, ${inputBytes} bytes<br>
+                Output: ${result.length} chars, ${outputBytes} bytes
+            `;
+        });
   </script>
 </body>
 </html>

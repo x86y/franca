@@ -1,19 +1,5 @@
 pub mod transformer;
 
-use quote::quote;
-use wasm_bindgen::prelude::wasm_bindgen;
-
-#[wasm_bindgen]
-pub fn tersify(src: String) -> String {
-    let t1 = transformer::mkterse(src);
-    // let t2 = conds::terser_conds(t1);
-    let gen = quote! { #t1 };
-    println!("{}", gen);
-    let f: syn::File = syn::parse2(gen).unwrap();
-    let pretty = prettyplease::unparse(&f);
-    pretty.to_string()
-}
-
 /// forks
 #[macro_export]
 macro_rules! atop {
