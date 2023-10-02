@@ -88,9 +88,59 @@ fn transform_stmt(stmt: &Stmt) -> Vec<Stmt> {
 }
 
 fn transform_block(block: &syn::Block) -> syn::Block {
-    let mut transformed_stmts = Vec::new();
+    let mut transformed_stmts: Vec<Stmt> = Vec::new();
+    let mut temp_let_vars: Vec<(&syn::Ident, &Box<syn::Expr>)> = Vec::new();
+    let mut temp_let_mut_vars: Vec<(&syn::Ident, &Box<syn::Expr>)> = Vec::new();
+
     for stmt in &block.stmts {
-        transformed_stmts.extend(transform_stmt(stmt));
+        match stmt {
+            Stmt::Local(syn::Local { pat, init, .. }) => {
+                let init = init.as_ref().unwrap();
+                let expr = &init.expr;
+                if let syn::Pat::Ident(ident) = pat {
+                    let var_ident = &ident.ident;
+                    if ident.mutability.is_some() {
+                        temp_let_mut_vars.push((var_ident, expr));
+                    } else {
+                        temp_let_vars.push((var_ident, expr));
+                    }
+                }
+            }
+            _ => {
+                if !temp_let_vars.is_empty() {
+                    let vars_quotes: Vec<_> = temp_let_vars
+                        .iter()
+                        .map(|(ident, expr)| quote! { #ident, #expr })
+                        .collect();
+                    transformed_stmts.push(parse_quote! { l!(#(#vars_quotes);*); });
+                    temp_let_vars.clear();
+                }
+                if !temp_let_mut_vars.is_empty() {
+                    let vars_mut_quotes: Vec<_> = temp_let_mut_vars
+                        .iter()
+                        .map(|(ident, expr)| quote! { #ident, #expr })
+                        .collect();
+                    transformed_stmts.push(parse_quote! { lm!(#(#vars_mut_quotes);*); });
+                    temp_let_mut_vars.clear();
+                }
+                transformed_stmts.extend(transform_stmt(stmt));
+            }
+        }
+    }
+
+    if !temp_let_vars.is_empty() {
+        let vars_quotes: Vec<_> = temp_let_vars
+            .iter()
+            .map(|(ident, expr)| quote! { #ident, #expr })
+            .collect();
+        transformed_stmts.push(parse_quote! { l!(#(#vars_quotes);*); });
+    }
+    if !temp_let_mut_vars.is_empty() {
+        let vars_mut_quotes: Vec<_> = temp_let_mut_vars
+            .iter()
+            .map(|(ident, expr)| quote! { #ident, #expr })
+            .collect();
+        transformed_stmts.push(parse_quote! { lm!(#(#vars_mut_quotes);*); });
     }
 
     syn::Block {

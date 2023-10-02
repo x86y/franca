@@ -1,11 +1,11 @@
-pub mod loops;
+pub mod transformer;
 
 use quote::quote;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 #[wasm_bindgen]
 pub fn tersify(src: String) -> String {
-    let t1 = loops::mkterse(src);
+    let t1 = transformer::mkterse(src);
     // let t2 = conds::terser_conds(t1);
     let gen = quote! { #t1 };
     println!("{}", gen);

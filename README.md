@@ -1,6 +1,8 @@
 # Franca
 Macros for writing terser Rust code. This crate contains both a library that exports the macros and a binary that transforms any Rust code to Rust code that uses the exported macros.
 
+Access the online demo hosted on github pages [here](https://x86y.github.io/franca).
+
 ## Example code written using Franca macros:
 ```rs
 use franca::*;
