@@ -12,8 +12,26 @@ macro_rules! parse_syn_int {
         }
     };
 }
+
 fn transform_stmt(stmt: &Stmt) -> Vec<Stmt> {
     match stmt {
+        Stmt::Local(syn::Local {
+            attrs: _,
+            let_token: _,
+            pat,
+            init,
+            semi_token: _,
+        }) => {
+            let init = init.as_ref().unwrap();
+            let expr = &init.expr;
+            if let syn::Pat::Ident(ident) = pat {
+                if ident.mutability.is_some() {
+                    return vec![parse_quote! { lm!(#expr); }];
+                } else {
+                    return vec![parse_quote! { l!(#expr); }];
+                }
+            }
+        }
         Stmt::Expr(syn::Expr::ForLoop(loop_expr), _) => {
             if let syn::Expr::Range(range_expr) = &*loop_expr.expr {
                 if let (syn::Expr::Lit(start), syn::Expr::Lit(end)) = (
@@ -37,6 +55,31 @@ fn transform_stmt(stmt: &Stmt) -> Vec<Stmt> {
             let cond = &loop_expr.cond;
             let new_body = transform_block(&loop_expr.body);
             return vec![parse_quote! { W!(#cond, { #new_body }); }];
+        }
+        Stmt::Expr(syn::Expr::If(if_expr), _) => {
+            let inner = &if_expr.cond;
+            let then_body = transform_block(&if_expr.then_branch);
+            if if_expr.else_branch.is_some() {
+                let else_body = &*if_expr.else_branch.as_ref().unwrap().1;
+                return vec![
+                    parse_quote! { I!(#inner,  #then_body ); },
+                    parse_quote! { I!(#inner,  #else_body ); },
+                ];
+            }
+            return vec![parse_quote! { I!(#inner, { #then_body }); }];
+        }
+        Stmt::Expr(syn::Expr::Match(match_expr), _) => {
+            let expr = &match_expr.expr;
+            let arms = &match_expr.arms;
+            let patterns = arms.iter().map(|arm| &arm.pat);
+            let bodies = arms.iter().map(|arm| &arm.body);
+            let transformed: Vec<_> = patterns
+                .zip(bodies)
+                .map(|(pat, body)| {
+                    quote! { #pat , #body }
+                })
+                .collect();
+            return vec![parse_quote! { M!(#expr; #(#transformed);*); }];
         }
         _ => return vec![stmt.clone()],
     }
@@ -109,7 +152,7 @@ pub fn unfolder() {
 }
 
 #[wasm_bindgen]
-pub fn terser_loops(i: String) -> String {
+pub fn mkterse(i: String) -> String {
     let item_fn: ItemFn = syn::parse_str(&i).unwrap();
     let transformed_fn = transform_loop_with_macro(item_fn);
     let generated_code = quote! { #transformed_fn };

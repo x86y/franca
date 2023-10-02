@@ -60,16 +60,38 @@
 <body>
   <form id="wasmForm">
     <textarea id="inputVal" placeholder="Write rust code here">
-fn main() {
-    for i in 0..5 {
-        println!("Out");
-        for i in 0..15 {
-                println!("In");
+pub fn eval(&mut self, s: String) {
+        let st = &mut vec![];
+        let b = &mut 0;
+        let a = &mut self.a;
+        let p = &mut self.p;
+        let ip = &mut self.ip;
+        let by = s.as_bytes();
+        while *ip < by.len() {
+            let c = by[*ip];
+            match c as char {
+                ']' => {
+                    if a[*p] != 0 {
+                        *ip = st.pop().unwrap();
+                    }
+                    *b = *ip;
+                }
+                '[' => {
+                    if a[*p] == 0 {
+                        *ip = *b;
+                    }
+                    st.push(*ip);
+                }
+                '+' => a[*p] += 1,
+                '-' => a[*p] -= 1,
+                '>' => *p += 1,
+                '<' => *p -= 1,
+                '.' => self.b.push(a[*p]),
+                ',' => {},
+                _ => unreachable!(),
+            };
+            *ip += 1;
         }
-    }
-    loop {
-        println!("Forever loop");
-    }
 }
     </textarea>
     <button type="submit">Enter</button>
@@ -77,14 +99,14 @@ fn main() {
   </form>
 
   <script type="module">
-    import init, { terser_loops } from "./pkg/libfranca.js";
+    import init, { mkterse } from "./pkg/libfranca.js";
 
     init();
 
     document.getElementById('wasmForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const inputValue = document.getElementById('inputVal').value;
-      const result = terser_loops(inputValue);
+      const result = mkterse(inputValue);
       document.getElementById('output').textContent = result;
     });
   </script>

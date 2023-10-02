@@ -4,13 +4,19 @@
 * @param {string} i
 * @returns {string}
 */
-export function terser_loops(i: string): string;
+export function mkterse(i: string): string;
+/**
+* @param {string} src
+* @returns {string}
+*/
+export function tersify(src: string): string;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly terser_loops: (a: number, b: number, c: number) => void;
+  readonly mkterse: (a: number, b: number, c: number) => void;
+  readonly tersify: (a: number, b: number, c: number) => void;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

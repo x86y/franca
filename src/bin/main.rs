@@ -1,9 +1,8 @@
 #![feature(custom_inner_attributes)]
 
-use libfranca::loops::{terser_loops, unfolder};
+use libfranca::loops::mkterse;
 
 fn main() {
-    unfolder();
-    let i = terser_loops("fn main() { while true {} }".into());
+    let i = mkterse("fn a() { let a = 5; let mut b = 10; }".into());
     println!("{i}");
 }

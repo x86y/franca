@@ -1,5 +1,19 @@
 pub mod loops;
 
+use quote::quote;
+use wasm_bindgen::prelude::wasm_bindgen;
+
+#[wasm_bindgen]
+pub fn tersify(src: String) -> String {
+    let t1 = loops::mkterse(src);
+    // let t2 = conds::terser_conds(t1);
+    let gen = quote! { #t1 };
+    println!("{}", gen);
+    let f: syn::File = syn::parse2(gen).unwrap();
+    let pretty = prettyplease::unparse(&f);
+    pretty.to_string()
+}
+
 /// forks
 #[macro_export]
 macro_rules! atop {
@@ -244,7 +258,6 @@ macro_rules! _c {
 pub const T: bool = true;
 pub const F: bool = false;
 pub type Sstr = &'static str;
-
 
 #[cfg(test)]
 mod tests {
